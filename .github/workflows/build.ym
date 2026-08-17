@@ -1,0 +1,25 @@
+name: Build S2 Dylib
+on: [push]
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ldid
+        run: brew install ldid
+      - name: Build
+        run: |
+          clang++ -arch arm64 -dynamiclib \
+            -o s2cheat.dylib \
+            "s2cheat final.mm" \
+            -framework Foundation \
+            -framework UIKit \
+            -isysroot $(xcrun --sdk iphoneos --show-sdk-path) \
+            -std=c++17 \
+            -fobjc-arc \
+            -target arm64-apple-ios13.0
+          ldid -S s2cheat.dylib || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: s2cheat-dylib
+          path: s2cheat.dylib
